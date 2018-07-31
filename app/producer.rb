@@ -1,5 +1,5 @@
 class Producer < ActiveRecord::Base
-  has_many :casting_opportunitys
+  has_many :casting_opportunities
   has_many :casting_requests
   has_many :actors, through: :casting_opportunities
 
