@@ -1,7 +1,7 @@
 class Producer < ActiveRecord::Base
   has_many :casting_opportunitys
   has_many :casting_requests
-  has_many :actors, through: :casting_opportunitys
+  has_many :actors, through: :casting_opportunities
 
   def full_name
     "#{first_name} #{last_name}"
@@ -15,5 +15,9 @@ class Producer < ActiveRecord::Base
   def list_opportunities
     CastingOpportunity.all
   end
+
+#First Time a Producer Uses App
+#Change .new to .create after testing line 27
+
 
 end
