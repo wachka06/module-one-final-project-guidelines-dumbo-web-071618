@@ -47,9 +47,10 @@ def menu_navigate
   when "Create_Opportunity"
     @@user.create_opportunity
   when "List_All_Opportunities"
+      @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
     list_opportunities
   when "Search_Opportunities_by_Attribute"
-    puts "\nCOMING SOON: Search_Opportunities_by_Attribute"
+    search_by_attribute
   when "Create_Request"
     puts "\nCOMING SOON: Create_Request"
   when "Respond_to_Request"
@@ -84,8 +85,8 @@ def list_opportunities
   if @current == nil
     @current = 0
   end
-
-  @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
+  #
+  # @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
 
   show_opportunity_record
 
@@ -120,4 +121,52 @@ def opportunity_record_menu
   when "Main_Menu"
     main_menu
   end
+end
+
+#Trying to create a method that could be used to search by attribute in different places
+def search_by_attribute
+
+  prompt = TTY::Prompt.new
+  search_array = []
+
+  system "clear"
+  @gender = prompt.select("If you want to select by gender identity, please make your selection.", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
+
+  if @gender != nil || @gender != "Don't_Search_by_Gender"
+    search_array << {gender: @gender}
+  end
+
+  system "clear"
+  choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
+  @age = prompt.multi_select("If you want to select by age_range, please make your selection.", choices)
+
+  if @age != nil || @age.empty?
+    search_array << {age_range: @age}
+  end
+
+  system "clear"
+  @race = prompt.select("If you want to select by race, please make your selection.", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
+
+  if @race != nil || @race != "Don't_Search_by_Race"
+    search_array << {race: @race}
+  end
+
+  system "clear"
+  @salary = prompt.select("If you want to select by salary, please make your selection.", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
+
+  if @salary != nil || @salary!= "Don't_Search_by_Salary"
+    search_array << {salary: @salary}
+  end
+
+  system "clear"
+  choices = %w(January February March April May June July August September October November December)
+  @dates = prompt.multi_select("If you want to select by dates, please make your selection.", choices)
+
+  if @dates != nil || @dates.empty?
+    search_array << {dates: @dates}
+  end
+binding.pry
+  @current_record =  CastingOpportunity.where(search_array.each do |index| search_array[index] end)
+
+  list_opportunities
 end
