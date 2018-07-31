@@ -1,3 +1,5 @@
+@current = 0
+
 def get_name
   system "clear"
   prompt = TTY::Prompt.new
@@ -47,7 +49,7 @@ def menu_navigate
   when "Create_Opportunity"
     @@user.create_opportunity
   when "List_All_Opportunities"
-      @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
+      @current_record = CastingOpportunity.where(status: "Active").order(:id)
     list_opportunities
   when "Search_Opportunities_by_Attribute"
     search_by_attribute
@@ -64,6 +66,8 @@ end
 
 def show_opportunity_record
   system "clear"
+    @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
+    
   table = Terminal::Table.new :title => @current_record.character_name do |t|
     t << ["Gender Identity", @current_record.gender]
     t << :separator
@@ -76,17 +80,17 @@ def show_opportunity_record
     t.add_row ["Dates", @current_record.dates]
   end
   puts table
-  @current_record =+ 1
 end
 
 def list_opportunities
-  @total = CastingOpportunity.all.length
-
   if @current == nil
     @current = 0
   end
-  #
-  # @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
+
+  if @first_time_list.nil?
+    @current_record = CastingOpportunity.where(status: "Active").order(:id)[@current]
+    @first_time_list = 1
+  end
 
   show_opportunity_record
 
