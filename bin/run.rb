@@ -8,10 +8,11 @@ prompt = TTY::Prompt.new
 #WE STILL NEED WELCOME MESSAGE AND SIGN-IN LOG-IN OPTIONS
 #WELCOME MESSAGE
 system "clear"
-puts "HORIZON APP".green
-puts "\nWhere the Stars Meet the Sky".yellow
 
-prompt.keypress("\n\n\n\n\n\nPlease press any key to begin.")
+puts "\n\nHORIZON".green
+puts "\n\n\n\nWhere the Stars Meet the Sky".yellow
+
+prompt.keypress("\n\n\n\n\nPlease press any key to begin.")
 
 system "clear"
 @role = prompt.select("Please select your role.", %w(Producer Actor))

@@ -13,7 +13,13 @@ class Producer < ActiveRecord::Base
 
     puts "MAIN MENU".yellow
 
-    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities Search_Opportunities_by_Attribute Create_Request Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
+    if pending_requests?
+      puts "\nYou have #{CastingRequest.where(producer_id: @@user.id, status: "Pending").length} pending casting requests.".red
+    else
+      puts "\nYou have no pending casting requests."
+    end
+
+    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities Search_Opportunities_by_Attribute Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
   end
 
   def menu_navigate
@@ -21,13 +27,11 @@ class Producer < ActiveRecord::Base
     when "Create_Opportunity"
       @@user.create_opportunity
     when "List_All_Opportunities"
-        @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+        @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
       @@user.list_opportunities
     when "Search_Opportunities_by_Attribute"
       @@user.search_by_attribute
-    when "Create_Request"
-      puts "\nCOMING SOON: Create_Request"
     when "Respond_to_Request"
       puts "\nCOMING SOON: Respond_to_Request"
     when "List_All_Requests"
@@ -63,7 +67,7 @@ class Producer < ActiveRecord::Base
     choices = %w(January February March April May June July August September October November December)
     @dates = prompt.multi_select("Dates: please select all that apply.", choices)
 
-    CastingOpportunity.create(gender: @gender, age_range: @age, race: @race, salary: @salary, dates: @dates, status: "Active", producer_id: @@user.id, character_name: @name)
+    CastingOpportunity.create(gender: @gender, age_range: @age, race: @race, salary: @salary, dates: @dates, status: "Pending", producer_id: @@user.id, character_name: @name)
 
     table = Terminal::Table.new :title => @name do |t|
       t << ["Gender Identity", @gender]
@@ -84,7 +88,7 @@ class Producer < ActiveRecord::Base
     end
 
     if input == 1
-      @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+      @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
       @current = CastingOpportunity.all.length - 1
       edit_opportunity
     elsif input == 2
@@ -100,7 +104,7 @@ class Producer < ActiveRecord::Base
 
       @@current_record[@current].delete
 
-      @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+      @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
       prompt.keypress("\nThis casting opportunity has been deleted. Press any key to continue.")
 
       system "clear"
@@ -204,14 +208,15 @@ class Producer < ActiveRecord::Base
 
   def opportunity_record_menu
     prompt = TTY::Prompt.new
-    input = prompt.select("\OPTIONS.\n", %w(Next_Record Previous_Record  Create_Request Delete_Opportunity Edit_Opportunity Main_Menu))
+    puts "\n#{@current + 1} of #{@@current_record.length} records"
+    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record  Create_Request Delete_Opportunity Edit_Opportunity Main_Menu))
 
     case input
     when "Next_Record"
       @current += 1
 
       if @current > @@current_record.length-1
-        prompt.keypress("This is the last record on this list. Press any key to continue.")
+        prompt.keypress("\nThis is the last record on this list. Press any key to continue.")
         @current -= 1
         list_opportunities
       else
@@ -289,13 +294,16 @@ class Producer < ActiveRecord::Base
       if input == true
         search_by_attribute
       else
-        @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+        @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
         # main_menu
       end
     end
-
     list_opportunities
+  end
+
+  def pending_requests?
+    CastingRequest.where(producer_id: @@user.id, status: "Pending").length > 0
   end
 
 

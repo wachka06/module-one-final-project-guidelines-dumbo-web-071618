@@ -15,14 +15,13 @@ def log_in
   Producer.find_by(first_name: @first_name, last_name: @last_name)
 end
 
-#Change .new to .create
 def producer_sign_in
   get_name
   if Producer.find_by(first_name: @first_name, last_name: @last_name) != nil
-    puts "You have an account already. Please log in with your username and password."
+    puts "\nYou have an account already. Please log in with your username and password."
     log_in
   else
-    Producer.new(first_name: @first_name, last_name: @last_name)
+    Producer.create(first_name: @first_name, last_name: @last_name)
   end
 end
 

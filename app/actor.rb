@@ -18,9 +18,9 @@ class Actor < ActiveRecord::Base
   def menu_navigate
     case @menu_input
       when "List_All_Opportunities"
-        @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+        @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
-      @@user.list_opportunities
+      list_opportunities
     when "List_Matching_Opportunities"
       search_matching_opportunities
     when "List_Your_Requests"
@@ -36,7 +36,7 @@ class Actor < ActiveRecord::Base
 
   def view_profile
     system "clear"
-    table = Terminal::Table.new :title => @@user.full_name do |t|
+    table = Terminal::Table.new :title => "#{@@user.full_name} Profile" do |t|
       t << ["Gender Identity", @@user.gender]
       t << :separator
       t.add_row ["Age Range", @@user.age_range]
@@ -165,12 +165,12 @@ class Actor < ActiveRecord::Base
   def search_matching_opportunities
     prompt = TTY::Prompt.new
 
-    @@current_record = CastingOpportunity.where(status: "Active", gender: @@user.gender, age_range: @@user.age_range, race: @@user.race, salary: @@user.salary_range, dates: @@user.dates)
+    @@current_record = CastingOpportunity.where(gender: @@user.gender, age_range: @@user.age_range, race: @@user.race, salary: @@user.salary_range, dates: @@user.dates)
     @current = 0
 
     if @@current_record.empty?
      prompt.keypress("None of the casting opportunities currently match your criteria. Press any key to return to menu.")
-     @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+     @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
      @current = 0
      # main_menu
     end
@@ -199,13 +199,22 @@ class Actor < ActiveRecord::Base
       request.castingopportunity_id
     end
 
-puts "You've requested to audition for the following roles:"
-    roles = opportunities.map do |opportunity|
-      puts CastingOpportunity.find(opportunity).character_name
+    puts "\nYou've requested to audition for the following roles:"
+
+    system "clear"
+
+    puts "#{@@user.full_name} Casting Requests\n".yellow
+
+    table = Terminal::Table.new :headings => ["Character Name", "Status"]
+
+    puts table
+
+    opportunities.map do |opportunity|
+    table = Terminal::Table.new do |t|
+      t << [CastingOpportunity.find(opportunity).character_name, CastingOpportunity.find(opportunity).status]
     end
-
-    prompt.keypress("Press any key to continue.")
-
+    puts table
   end
-
+    prompt.keypress("\nPress any key to continue.")
+end
 end
