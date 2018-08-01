@@ -1,5 +1,4 @@
 class Actor < ActiveRecord::Base
-  has_many :casting_opportunities
   has_many :casting_requests
   has_many :producers, through: :casting_opportunitys
 

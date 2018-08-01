@@ -21,9 +21,13 @@ elsif @role == "Actor"
   @@user = actor_sign_in
 end
 
-main_menu
+until (@menu_input == "Exit")
 
-menu_navigate
+  main_menu
+
+  menu_navigate
+
+end
 
 
 binding.pry
