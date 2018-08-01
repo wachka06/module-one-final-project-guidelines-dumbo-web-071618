@@ -7,14 +7,11 @@ class Producer < ActiveRecord::Base
     "#{first_name} #{last_name}"
   end
 
-#Change .new to .create after testing line 12
-#Change .new to .create
   def create_opportunity
-
     prompt = TTY::Prompt.new
 
     system "clear"
-    @name = prompt.ask("Please enter character name.")
+    @name = prompt.ask("Please enter character name.", required: true)
 
     system "clear"
     @gender = prompt.select("Please select gender identity.", %w(Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
@@ -54,6 +51,8 @@ class Producer < ActiveRecord::Base
     end
 
     if input == 1
+      @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+      @current = CastingOpportunity.all.length - 1
       edit_opportunity
     elsif input == 2
       main_menu
@@ -66,8 +65,11 @@ class Producer < ActiveRecord::Base
     input = prompt.yes?("Are you sure you want to delete this casting opportunity?")
     if input == true
 
+      @@current_record[@current].delete
+
+      @@current_record = CastingOpportunity.where(status: "Active").order(:id)
       prompt.keypress("\nThis casting opportunity has been deleted. Press any key to continue.")
-      # @@current_record[@current].delete
+
       system "clear"
         if @current == 0
           @current +=1
@@ -93,7 +95,7 @@ class Producer < ActiveRecord::Base
 
     case input
     when "Character_Name"
-      edit_input = prompt.ask("Please enter new character name:")
+      edit_input = prompt.ask("\nPlease enter new character name:")
 
       @@current_record[@current].update(character_name: edit_input)
 
