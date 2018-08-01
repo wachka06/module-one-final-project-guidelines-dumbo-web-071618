@@ -1,6 +1,6 @@
 class Actor < ActiveRecord::Base
   has_many :casting_requests
-  has_many :producers, through: :casting_opportunitys
+  has_many :producers, through: :casting_opportunities
 
   def full_name
     "#{first_name} #{last_name}"
@@ -12,7 +12,7 @@ class Actor < ActiveRecord::Base
 
     puts "MAIN MENU".yellow
 
-    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(List_All_Opportunities List_Matching_Opportunities Create_Request Respond_to_Request List_Your_Requests List_Producer_Requests View_Profile Exit))
+    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(List_All_Opportunities List_Matching_Opportunities List_Your_Requests View_Profile Exit))
   end
 
   def menu_navigate
@@ -22,15 +22,9 @@ class Actor < ActiveRecord::Base
         @current = 0
       @@user.list_opportunities
     when "List_Matching_Opportunities"
-      puts "WORKING ON IT...SOMING SOON!"
-    when "Create_Request"
-      puts "\nCOMING SOON: Create_Request"
-    when "Respond_to_Request"
-      puts "\nCOMING SOON: Respond_to_Request"
+      search_matching_opportunities
     when "List_Your_Requests"
-      puts "\nCOMING SOON: List_Your_Requests"
-    when "List_Producer_Requests"
-      puts "\nCOMING SOON: List_Producer_Requests"
+      list_your_requests
     when "View_Profile"
       view_profile
       profile_menu
@@ -63,7 +57,7 @@ class Actor < ActiveRecord::Base
     if input == "Edit_Profile"
       edit_profile
     else
-      main_menu
+      # main_menu
     end
   end
 
@@ -139,6 +133,7 @@ class Actor < ActiveRecord::Base
 
   def opportunity_record_menu
     prompt = TTY::Prompt.new
+    puts "\n#{@current + 1} of #{@@current_record.length} records"
     input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record  Create_Request Main_Menu))
 
     case input
@@ -146,7 +141,7 @@ class Actor < ActiveRecord::Base
       @current += 1
 
       if @current > @@current_record.length-1
-        prompt.keypress("This is the last record on this list. Press any key to continue.")
+        prompt.keypress("\nThis is the last record on this list. Press any key to continue.")
         @current -= 1
         list_opportunities
       else
@@ -161,11 +156,56 @@ class Actor < ActiveRecord::Base
       list_opportunities
       end
     when "Create_Request"
-      puts "CREATE REQUEST NOT READY- Coming Soon!"
-      exit
+      create_request
     when "Main_Menu"
-      main_menu
+      # main_menu
     end
+  end
+
+  def search_matching_opportunities
+    prompt = TTY::Prompt.new
+
+    @@current_record = CastingOpportunity.where(status: "Active", gender: @@user.gender, age_range: @@user.age_range, race: @@user.race, salary: @@user.salary_range, dates: @@user.dates)
+    @current = 0
+
+    if @@current_record.empty?
+     prompt.keypress("None of the casting opportunities currently match your criteria. Press any key to return to menu.")
+     @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+     @current = 0
+     # main_menu
+    end
+   list_opportunities
+ end
+
+  def create_request
+    prompt = TTY::Prompt.new
+    if !CastingRequest.find_by(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id).nil?
+      prompt.keypress("You've already requested an audition for this role. BE PATIENT.")
+    else
+      CastingRequest.create(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id, status: "Pending")
+
+      puts "Your request to audition for the part of #{@@current_record[@current].character_name} has been sent to the producer."
+
+      prompt.keypress("\nPlease press any key to continue.")
+    end
+  end
+
+  def list_your_requests
+    prompt = TTY::Prompt.new
+
+    my_requests = CastingRequest.where(actor_id: @@user.id)
+
+    opportunities = my_requests.map do |request|
+      request.castingopportunity_id
+    end
+
+puts "You've requested to audition for the following roles:"
+    roles = opportunities.map do |opportunity|
+      puts CastingOpportunity.find(opportunity).character_name
+    end
+
+    prompt.keypress("Press any key to continue.")
+
   end
 
 end

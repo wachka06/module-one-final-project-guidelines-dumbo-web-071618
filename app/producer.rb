@@ -88,7 +88,7 @@ class Producer < ActiveRecord::Base
       @current = CastingOpportunity.all.length - 1
       edit_opportunity
     elsif input == 2
-      main_menu
+      # main_menu
     end
   end
 
@@ -233,7 +233,7 @@ class Producer < ActiveRecord::Base
     when "Edit_Opportunity"
       @@user.edit_opportunity
     when "Main_Menu"
-      main_menu
+      # main_menu
     end
   end
 
@@ -288,7 +288,10 @@ class Producer < ActiveRecord::Base
       input = prompt.yes?("None of the casting opportunities match your query. Would you like to run another search?")
       if input == true
         search_by_attribute
-      else main_menu
+      else
+        @@current_record = CastingOpportunity.where(status: "Active").order(:id)
+        @current = 0
+        # main_menu
       end
     end
 

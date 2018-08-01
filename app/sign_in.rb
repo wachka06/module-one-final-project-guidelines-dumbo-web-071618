@@ -10,7 +10,9 @@ end
 def log_in
   puts "\nCOMING SOON".yellow
   puts"\n\nSTILL WORKING ON IT!".red
-  exit
+  prompt = TTY::Prompt.new
+  prompt.keypress("But hey, let's test on. Press any key to proceed.")
+  Producer.find_by(first_name: @first_name, last_name: @last_name)
 end
 
 #Change .new to .create
@@ -28,7 +30,7 @@ def actor_sign_in
   get_name
   prompt = TTY::Prompt.new
     if Actor.find_by(first_name: @first_name, last_name: @last_name) != nil
-      prompt.keypress("You already have a profile. Press any key to continue.")
+      prompt.keypress("\nYou already have a profile. Press any key to continue.")
       @@user = Actor.find_by(first_name: @first_name, last_name: @last_name)
     else
         create_profile
