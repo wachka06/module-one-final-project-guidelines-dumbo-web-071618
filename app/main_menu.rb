@@ -4,7 +4,7 @@ def main_menu
 
   puts "MAIN MENU".blue
 
-  @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities Search_Opportunities_by_Attribute Create_Request Respond_to_Request List_All_Requests Search_Requests_by_Attribute))
+  @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities Search_Opportunities_by_Attribute Create_Request Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
 end
 
 def menu_navigate
@@ -25,5 +25,8 @@ def menu_navigate
     puts "\nCOMING SOON: List_All_Requests"
   when "Search_Requests_by_Attribute"
     puts "\nCOMING SOON: Search_Requests_by_Attribute"
+  when "Exit"
+    puts "Thank you for your visit!"
+    exit
   end
 end
