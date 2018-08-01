@@ -19,6 +19,8 @@ if @role == "Producer"
   @@user = producer_sign_in
 elsif @role == "Actor"
   @@user = actor_sign_in
+  @@user.view_profile
+  @@user.profile_menu
 end
 
 until (@menu_input == "Exit")

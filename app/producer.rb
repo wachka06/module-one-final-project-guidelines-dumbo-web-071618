@@ -11,7 +11,7 @@ class Producer < ActiveRecord::Base
     system "clear"
     prompt = TTY::Prompt.new
 
-    puts "MAIN MENU".blue
+    puts "MAIN MENU".yellow
 
     @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities Search_Opportunities_by_Attribute Create_Request Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
   end

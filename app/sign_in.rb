@@ -55,7 +55,7 @@ def create_profile
 
   system "clear"
   choices = %w(January February March April May June July August September October November December)
-  @dates = prompt.multi_select("Dates: please select all that apply.", choices)
+  @dates = prompt.multi_select("Please select the months when you're available.", choices)
 
   Actor.create(first_name: @first_name, last_name: @last_name, gender: @gender, age_range: @age, race: @race, salary_range: @salary, dates: @dates)
 end
