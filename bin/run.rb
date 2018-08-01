@@ -23,9 +23,9 @@ end
 
 until (@menu_input == "Exit")
 
-  main_menu
+  @@user.main_menu
 
-  menu_navigate
+  @@user.menu_navigate
 
 end
 
