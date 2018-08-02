@@ -174,7 +174,7 @@ class Actor < ActiveRecord::Base
     when "Create_Request"
       create_request
     when "Main_Menu"
-      # main_menu
+      return
     end
   end
 
@@ -188,7 +188,7 @@ class Actor < ActiveRecord::Base
      prompt.keypress("None of the casting opportunities currently match your criteria. Press any key to return to menu.")
      @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
      @current = 0
-     # main_menu
+     return
     end
    list_opportunities
  end
@@ -198,12 +198,17 @@ class Actor < ActiveRecord::Base
     if !CastingRequest.find_by(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id).nil?
       puts "\nYou've already requested an audition for this role."
       prompt.keypress("\nBE PATIENT.".red)
+
+      show_opportunity_record
+      opportunity_record_menu
     else
       CastingRequest.create(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id, status: "Pending")
 
       puts "\nYour request to audition for the part of #{@@current_record[@current].character_name} has been sent to the producer."
 
       prompt.keypress("\nPlease press any key to continue.")
+      show_opportunity_record
+      opportunity_record_menu
     end
   end
 

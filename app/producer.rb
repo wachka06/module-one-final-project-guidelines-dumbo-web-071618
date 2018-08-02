@@ -19,7 +19,7 @@ class Producer < ActiveRecord::Base
       puts "\nYou have no pending casting requests."
     end
 
-    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities List_My_Opportunities Search_Opportunities_by_Attribute List_Requests Search_Requests_by_Attribute Exit))
+  @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities List_My_Opportunities Search_Opportunities_by_Attribute List_Requests View_Actor_Profiles Exit))
   end
 
   def menu_navigate
@@ -38,10 +38,11 @@ class Producer < ActiveRecord::Base
       @@current_record = CastingRequest.where(producer_id: @@user.id)
       @current = 0
       list_requests
-    when "Search_Requests_by_Attribute"
-      puts "\nCOMING SOON: Search_Requests_by_Attribute"
+    when "View_Actor_Profiles"
+      @current = 0
+      view_actor_profiles
     when "Exit"
-      puts "Thank you for your visit!"
+      puts "\nThank YOU for your visit!"
       exit
     end
   end
@@ -150,7 +151,8 @@ class Producer < ActiveRecord::Base
 
     case input
     when "Character_Name"
-      edit_input = prompt.ask("\nPlease enter new character name:")
+      puts "\nPlease enter new character name:"
+      edit_input = gets.chomp
 
       @@current_record[@current].update(character_name: edit_input)
 
@@ -243,7 +245,7 @@ class Producer < ActiveRecord::Base
   def opportunity_record_menu
     prompt = TTY::Prompt.new
     puts "\n#{@current + 1} of #{@@current_record.length} records"
-    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record  Create_Request Delete_Opportunity Edit_Opportunity Main_Menu))
+    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record Delete_Opportunity Edit_Opportunity Main_Menu))
 
     case input
     when "Next_Record"
@@ -264,9 +266,6 @@ class Producer < ActiveRecord::Base
       @current -= 1
       list_opportunities
       end
-    when "Create_Request"
-      puts "CREATE REQUEST NOT READY- Coming Soon!"
-      exit
     when "Delete_Opportunity"
       @@user.delete_opportunity
     when "Edit_Opportunity"
@@ -323,7 +322,7 @@ class Producer < ActiveRecord::Base
     @@current_record =  CastingOpportunity.where(search_hash_with_strings)
     @current = 0
     if @@current_record.empty?
-      input = prompt.yes?("/nNone of the casting opportunities match your query. Would you like to run another search?")
+      input = prompt.yes?("\nNone of the casting opportunities match your query. Would you like to run another search?")
       if input == true
         search_by_attribute
       else
@@ -488,5 +487,40 @@ system "clear"
   def order_by_date
     @@current_record = CastingRequest.where(actor_id: @x).order (:id)
     view_actor_record
+  end
+
+  def view_actor_profiles
+    system "clear"
+    @actor = Actor.all[@current]
+    show_actor_profile
+    actor_profile_menu
+  end
+
+  def actor_profile_menu
+    prompt = TTY::Prompt.new
+
+    puts "\n#{@current + 1} of #{Actor.all.length} records"
+
+    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record Main_Menu))
+
+    case input
+    when "Next_Record"
+      @current += 1
+      if @current > Actor.all.length-1
+        prompt.keypress("\nThis is the last record on this list. Press any key to continue.")
+        @current -= 1
+        view_actor_profiles
+      else
+        view_actor_profiles
+      end
+    when "Previous_Record"
+      if @current == 0
+        prompt.keypress("\nThere are no previous records on this list. Press any key to continue.")
+        view_actor_profiles
+      else
+      @current -= 1
+      view_actor_profiles
+      end
+    end
   end
 end
