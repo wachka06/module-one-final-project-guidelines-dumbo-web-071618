@@ -1,8 +1,5 @@
 require_relative '../config/environment'
 
-roberto = Actor.find(1)
-natsuki = Producer.find(1)
-
 prompt = TTY::Prompt.new
 
 system "clear"
@@ -28,7 +25,5 @@ until (@menu_input == "Exit")
 
 end
 
-
-binding.pry
 
 puts "HELLO WORLD"

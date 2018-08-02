@@ -339,9 +339,6 @@ class Producer < ActiveRecord::Base
     CastingRequest.where(producer_id: @@user.id, status: "Pending").length > 0
   end
 
-  def respond_to_request
-  end
-
   def list_requests
     prompt = TTY::Prompt.new
 
@@ -378,7 +375,7 @@ class Producer < ActiveRecord::Base
 
     puts "\n#{@current + 1} of #{@@current_record.length} records"
 
-    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record Accept_Request Deny_Request Main_Menu))
+    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record View_Actor's_Casting_Record Accept_Request Deny_Request Main_Menu))
 
     case input
     when "Next_Record"
@@ -398,6 +395,10 @@ class Producer < ActiveRecord::Base
       @current -= 1
       list_requests
       end
+    when "View_Actor's_Casting_Record"
+      @x = @@current_record[@current].actor_id
+      @@current_record = CastingRequest.where(actor_id: @x)
+      view_actor_record
     when "Accept_Request"
       accept_request
     when "Deny_Request"
@@ -428,5 +429,64 @@ class Producer < ActiveRecord::Base
   def deny_request
     @@current_record[@current].update(status: "Denied")
     list_requests
+  end
+
+  def view_actor_record
+    prompt = TTY::Prompt.new
+
+    @opportunities = @@current_record.map do |request|
+      [request.castingopportunity_id, request.id]
+    end
+
+system "clear"
+
+    puts "\n#{Actor.find(@x).first_name} has requested auditions for the following roles:"
+
+    table = Terminal::Table.new :rows => [["Character Name".yellow, "Status".yellow]], :style => {:width => 60}
+
+    table.align_column(0, :center)
+    table.align_column(1, :center)
+
+    puts table
+
+    @opportunities.map do |opportunity|
+      table = Terminal::Table.new :style => {:width => 60} do |t|
+        t << [CastingOpportunity.find(opportunity[0]).character_name, CastingRequest.find(opportunity[1]).status]
+      end
+
+      table.align_column(0, :center)
+      table.align_column(1, :center)
+      puts table
+    end
+    actor_record_menu
+  end
+
+  def actor_record_menu
+    prompt = TTY::Prompt.new
+
+    input = prompt.select("\nOPTIONS.\n", %w(Order_by_Status Order_by_Date Back_to_Casting_Requests))
+
+    case input
+      # when "Delete_Request"
+      #   delete_request
+      when "Order_by_Status"
+        order_by_status
+      when "Order_by_Date"
+        order_by_date
+      when "Back_to_Casting_Requests"
+        @@current_record = CastingRequest.where(producer_id: @@user.id)
+        @current = 0
+        list_requests
+    end
+  end
+
+  def order_by_status
+    @@current_record = CastingRequest.where(actor_id: @x).order (:status)
+    view_actor_record
+  end
+
+  def order_by_date
+    @@current_record = CastingRequest.where(actor_id: @x).order (:id)
+    view_actor_record
   end
 end
