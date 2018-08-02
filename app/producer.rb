@@ -19,7 +19,7 @@ class Producer < ActiveRecord::Base
       puts "\nYou have no pending casting requests."
     end
 
-    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities Search_Opportunities_by_Attribute Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
+    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities List_My_Opportunities Search_Opportunities_by_Attribute Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
   end
 
   def menu_navigate
@@ -30,10 +30,12 @@ class Producer < ActiveRecord::Base
         @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
       @@user.list_opportunities
+    when "List_My_Opportunities"
+      list_my_opportunities
     when "Search_Opportunities_by_Attribute"
       @@user.search_by_attribute
     when "Respond_to_Request"
-      puts "\nCOMING SOON: Respond_to_Request"
+      respond_to_request
     when "List_All_Requests"
       puts "\nCOMING SOON: List_All_Requests"
     when "Search_Requests_by_Attribute"
@@ -99,7 +101,13 @@ class Producer < ActiveRecord::Base
   def delete_opportunity
     prompt = TTY::Prompt.new
 
-    input = prompt.yes?("Are you sure you want to delete this casting opportunity?")
+    if @@current_record[@current].producer_id != @@user.id
+      prompt.keypress("\nYou can only delete casting opportunities you create. Press any key to continue.")
+      show_opportunity_record
+      opportunity_record_menu
+    end
+
+    input = prompt.yes?("\nAre you sure you want to delete this casting opportunity?")
     if input == true
 
       @@current_record[@current].delete
@@ -125,7 +133,16 @@ class Producer < ActiveRecord::Base
   end
 
   def edit_opportunity
+    prompt = TTY::Prompt.new
+
+    if @@current_record[@current].producer_id != @@user.id
+      prompt.keypress("\nYou can only edit the casting opportunities you create. Press any key to continue.")
+      show_opportunity_record
+      opportunity_record_menu
+    end
+
     show_opportunity_record
+
 
     prompt = TTY::Prompt.new
     input = prompt.select("\nPlease select the element you wish to edit.", %w(Character_Name Gender_Identity Age_Range Race Salary Dates Done_Editing))
@@ -184,7 +201,14 @@ class Producer < ActiveRecord::Base
     if @current == nil
       @current = 0
     end
+    show_opportunity_record
+    opportunity_record_menu
+  end
 
+  def list_my_opportunities
+
+    @@current_record = CastingOpportunity.where(producer_id: @@user.id)
+    @current = 0
     show_opportunity_record
     opportunity_record_menu
   end
@@ -290,7 +314,7 @@ class Producer < ActiveRecord::Base
     @@current_record =  CastingOpportunity.where(search_hash_with_strings)
     @current = 0
     if @@current_record.empty?
-      input = prompt.yes?("None of the casting opportunities match your query. Would you like to run another search?")
+      input = prompt.yes?("/nNone of the casting opportunities match your query. Would you like to run another search?")
       if input == true
         search_by_attribute
       else
@@ -304,6 +328,9 @@ class Producer < ActiveRecord::Base
 
   def pending_requests?
     CastingRequest.where(producer_id: @@user.id, status: "Pending").length > 0
+  end
+
+  def respond_to_request
   end
 
 
