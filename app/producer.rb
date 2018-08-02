@@ -197,7 +197,6 @@ class Producer < ActiveRecord::Base
    end
   end
 
-
   def list_opportunities
     if @current == nil
       @current = 0
@@ -235,6 +234,10 @@ class Producer < ActiveRecord::Base
       t.add_row ["Dates", @@current_record[@current].dates]
     end
     puts table
+
+    if @@current_record[@current].producer_id == @@user.id
+      puts "\nYou created this casting opportunity. You can edit it or delete it.".yellow
+    end
   end
 
   def opportunity_record_menu

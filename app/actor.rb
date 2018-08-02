@@ -12,7 +12,16 @@ class Actor < ActiveRecord::Base
 
     puts "MAIN MENU".yellow
 
-    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(List_All_Opportunities List_Matching_Opportunities Search_Opportunities_by_Attributes List_Your_Requests View_Profile Exit))
+    puts ""
+    puts ""
+
+    view_profile
+
+    if pending_requests?
+      puts "\n\nYou have #{CastingRequest.where(actor_id: @@user.id, status: "Accepted").length} upcoming auditions!".red
+    end
+
+    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(List_All_Opportunities List_Matching_Opportunities Search_Opportunities_by_Attributes List_Your_Requests Edit_Profile Exit))
   end
 
   def menu_navigate
@@ -29,9 +38,8 @@ class Actor < ActiveRecord::Base
       @@current_record = CastingRequest.where(actor_id: @@user.id)
       @current = 0
       list_your_requests
-    when "View_Profile"
-      view_profile
-      profile_menu
+    when "Edit_Profile"
+      edit_profile
     when "Exit"
       puts "Thank you for your visit!"
       exit
@@ -39,7 +47,6 @@ class Actor < ActiveRecord::Base
   end
 
   def view_profile
-    system "clear"
     table = Terminal::Table.new :title => "#{@@user.full_name} Profile" do |t|
       t << ["Gender Identity", @@user.gender]
       t << :separator
@@ -54,18 +61,20 @@ class Actor < ActiveRecord::Base
     puts table
   end
 
-  def profile_menu
-    prompt = TTY::Prompt.new
-    input = prompt.select("\nOPTIONS.\n", %w(Edit_Profile Main_Menu))
-
-    if input == "Edit_Profile"
-      edit_profile
-    else
-      # main_menu
-    end
-  end
+#I Don't Think We Need Profile_menu anymore Since it's part of the main menu now
+  # def profile_menu
+  #   prompt = TTY::Prompt.new
+  #   input = prompt.select("\nOPTIONS.\n", %w(Edit_Profile Main_Menu))
+  #
+  #   if input == "Edit_Profile"
+  #     edit_profile
+  #   else
+  #     return
+  #   end
+  # end
 
   def edit_profile
+    system "clear"
     view_profile
 
     prompt = TTY::Prompt.new
@@ -108,7 +117,10 @@ class Actor < ActiveRecord::Base
       @@user.update(dates: edit_input)
 
       edit_profile
-   end
+
+    when "Done_Editing"
+      return
+    end
   end
 
   def list_opportunities
@@ -198,7 +210,7 @@ class Actor < ActiveRecord::Base
   def list_your_requests
     prompt = TTY::Prompt.new
 
-    opportunities = @@current_record.map do |request|
+    @opportunities = @@current_record.map do |request|
       [request.castingopportunity_id, request.id]
     end
 
@@ -215,7 +227,7 @@ class Actor < ActiveRecord::Base
 
     puts table
 
-    opportunities.map do |opportunity|
+    @opportunities.map do |opportunity|
       table = Terminal::Table.new :style => {:width => 60} do |t|
         t << [CastingOpportunity.find(opportunity[0]).character_name, CastingRequest.find(opportunity[1]).status]
       end
@@ -231,11 +243,11 @@ class Actor < ActiveRecord::Base
   def requests_menu
     prompt = TTY::Prompt.new
 
-    input = prompt.select("\nOPTIONS.\n", %w(Delete_Request Order_by_Status Order_by_Date Main_Menu))
+    input = prompt.select("\nOPTIONS.\n", %w(Order_by_Status Order_by_Date Main_Menu))
 
     case input
-      when "Delete_Request"
-        delete_request
+      # when "Delete_Request"
+      #   delete_request
       when "Order_by_Status"
         order_by_status
       when "Order_by_Date"
@@ -310,4 +322,44 @@ class Actor < ActiveRecord::Base
     end
     list_opportunities
   end
+
+  def pending_requests?
+    CastingRequest.where(actor_id: @@user.id, status: "Accepted").length > 0
+  end
+#COULD NOT GET IT TO WORK_REVISIT
+  # def delete_request
+  #   prompt = TTY::Prompt.new
+  #
+  #   character_names = @opportunities.map do |id|
+  #     CastingOpportunity.find(id[0]).character_name
+  #   end
+  #
+  #   choices = %w(#{character_names})
+  #   edit_input = prompt.multi_select("Please select the new age ranges that apply.", choices)
+  #
+  #
+  #   input = prompt.yes?("\nAre you sure you want to delete this casting opportunity?")
+  #   if input == true
+  #
+  #     @@current_record[@current].delete
+  #
+  #     @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
+  #     prompt.keypress("\nThis casting opportunity has been deleted. Press any key to continue.")
+  #
+  #     system "clear"
+  #       if @current == 0
+  #         @current +=1
+  #         show_opportunity_record
+  #         opportunity_record_menu
+  #       else
+  #         @current -=1
+  #         show_opportunity_record
+  #         opportunity_record_menu
+  #       end
+  #   else
+  #     prompt.keypress("\nCasting opportunity was not deleted. Press any key to continue.")
+  #       show_opportunity_record
+  #       opportunity_record_menu
+  #   end
+  # end
 end
