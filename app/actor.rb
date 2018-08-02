@@ -182,7 +182,8 @@ class Actor < ActiveRecord::Base
   def create_request
     prompt = TTY::Prompt.new
     if !CastingRequest.find_by(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id).nil?
-      prompt.keypress("\nYou've already requested an audition for this role. BE PATIENT.")
+      puts "\nYou've already requested an audition for this role."
+      prompt.keypress("\nBE PATIENT.".red)
     else
       CastingRequest.create(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id, status: "Pending")
 
@@ -205,10 +206,10 @@ class Actor < ActiveRecord::Base
 
     system "clear"
 
-    puts "#{@@user.full_name} Casting Requests\n".yellow
+    puts "#{@@user.full_name} Casting Requests\n".green
 
 
-    table = Terminal::Table.new :rows => [["Character Name", "Status"]], :style => {:width => 60}
+    table = Terminal::Table.new :rows => [["Character Name".yellow, "Status".yellow]], :style => {:width => 60}
 
     table.align_column(0, :center)
     table.align_column(1, :center)

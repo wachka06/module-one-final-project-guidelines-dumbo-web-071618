@@ -19,7 +19,7 @@ class Producer < ActiveRecord::Base
       puts "\nYou have no pending casting requests."
     end
 
-    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities List_My_Opportunities Search_Opportunities_by_Attribute Respond_to_Request List_All_Requests Search_Requests_by_Attribute Exit))
+    @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities List_My_Opportunities Search_Opportunities_by_Attribute List_Requests Search_Requests_by_Attribute Exit))
   end
 
   def menu_navigate
@@ -34,10 +34,9 @@ class Producer < ActiveRecord::Base
       list_my_opportunities
     when "Search_Opportunities_by_Attribute"
       @@user.search_by_attribute
-    when "Respond_to_Request"
-      respond_to_request
-    when "List_All_Requests"
-      puts "\nCOMING SOON: List_All_Requests"
+    when "List_Requests"
+      @current = 0
+      list_requests
     when "Search_Requests_by_Attribute"
       puts "\nCOMING SOON: Search_Requests_by_Attribute"
     when "Exit"
@@ -143,7 +142,6 @@ class Producer < ActiveRecord::Base
 
     show_opportunity_record
 
-
     prompt = TTY::Prompt.new
     input = prompt.select("\nPlease select the element you wish to edit.", %w(Character_Name Gender_Identity Age_Range Race Salary Dates Done_Editing))
 
@@ -191,11 +189,8 @@ class Producer < ActiveRecord::Base
 
       edit_opportunity
    end
-
   end
 
-  #TRYING OUT THE CLI METHODS HERE
-  #SHOW OPPORTUNITY RECORD
 
   def list_opportunities
     if @current == nil
@@ -333,5 +328,80 @@ class Producer < ActiveRecord::Base
   def respond_to_request
   end
 
+  def list_requests
+    prompt = TTY::Prompt.new
 
+    @@current_record = CastingRequest.where(producer_id: @@user.id)
+
+    @actor = Actor.find(@@current_record[@current].actor_id)
+
+    actor_name = Actor.find(@@current_record[@current].actor_id).full_name
+
+    character_name = CastingOpportunity.find(@@current_record[@current].castingopportunity_id).character_name
+
+    request_status = CastingOpportunity.find(@@current_record[@current].castingopportunity_id).status
+
+    system "clear"
+
+    puts "#{@@user.full_name} Pending Casting Requests\n".green
+
+    table = Terminal::Table.new :headings => [["Actor Name".yellow, "Character Name".yellow, "Status".yellow]], :rows => [[actor_name, character_name, request_status.red]], :style => {:width => 60}
+
+    puts table
+    puts " "
+    puts " "
+
+    show_actor_profile
+
+    # prompt.keypress("press any key to see your options.")
+
+    requests_menu
+  end
+
+  def requests_menu
+    prompt = TTY::Prompt.new
+
+    puts "\n#{@current + 1} of #{@@current_record.length} records"
+
+    input = prompt.select("\nOPTIONS.\n", %w(Next_Record Previous_Record Accept_Request Deny_Request Main_Menu))
+
+    case input
+    when "Next_Record"
+      @current += 1
+      if @current > @@current_record.length-1
+        prompt.keypress("\nThis is the last record on this list. Press any key to continue.")
+        @current -= 1
+        list_requests
+      else
+        list_requests
+      end
+    when "Previous_Record"
+      if @current == 0
+        prompt.keypress("\nThere are no previous records on this list. Press any key to continue.")
+        list_requests
+      else
+      @current -= 1
+      list_requests
+      end
+    when "Accept_Request"
+      puts "ACCEPT REQUEST COMING SOON!!!"
+    when "Deny_Request"
+      puts "DENY REQUEST COMING SOON!!!"
+    end
+  end
+
+  def show_actor_profile
+    table = Terminal::Table.new :title => "#{@actor.full_name} Profile".yellow do |t|
+      t << ["Gender Identity", @actor.gender]
+      t << :separator
+      t.add_row ["Age Range", @actor.age_range]
+      t.add_separator
+      t.add_row ["Race", @actor.race]
+      t.add_separator
+      t.add_row ["Salary", @actor.salary_range]
+      t.add_separator
+      t.add_row ["Availability", @actor.dates]
+    end
+    puts table
+  end
 end

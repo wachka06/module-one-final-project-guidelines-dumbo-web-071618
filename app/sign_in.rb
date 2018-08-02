@@ -39,7 +39,7 @@ def actor_sign_in
 def create_profile
   prompt = TTY::Prompt.new
 
-  prompt.keypress("Let's create your profile. This information will be used when you search for the specific casting opportunities that match your criteria.")
+  prompt.keypress("\nLet's create your profile. This information will be used when you search for the specific casting opportunities that match your criteria.")
 
   system "clear"
   @gender = prompt.select("Please select gender identity.", %w(Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
