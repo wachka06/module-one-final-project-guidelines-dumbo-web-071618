@@ -26,6 +26,8 @@ class Actor < ActiveRecord::Base
     when "Search_Opportunities_by_Attributes"
       search_by_attribute
     when "List_Your_Requests"
+      @@current_record = CastingRequest.where(actor_id: @@user.id)
+      @current = 0
       list_your_requests
     when "View_Profile"
       view_profile
@@ -196,10 +198,8 @@ class Actor < ActiveRecord::Base
   def list_your_requests
     prompt = TTY::Prompt.new
 
-    my_requests = CastingRequest.where(actor_id: @@user.id)
-
-    opportunities = my_requests.map do |request|
-      request.castingopportunity_id
+    opportunities = @@current_record.map do |request|
+      [request.castingopportunity_id, request.id]
     end
 
     puts "\nYou've requested to audition for the following roles:"
@@ -207,7 +207,6 @@ class Actor < ActiveRecord::Base
     system "clear"
 
     puts "#{@@user.full_name} Casting Requests\n".green
-
 
     table = Terminal::Table.new :rows => [["Character Name".yellow, "Status".yellow]], :style => {:width => 60}
 
@@ -217,73 +216,98 @@ class Actor < ActiveRecord::Base
     puts table
 
     opportunities.map do |opportunity|
-    table = Terminal::Table.new :style => {:width => 60} do |t|
-      t << [CastingOpportunity.find(opportunity).character_name, CastingOpportunity.find(opportunity).status]
-    end
-    table.align_column(0, :center)
-    table.align_column(1, :center)
-    puts table
-  end
-    prompt.keypress("\nPress any key to continue.")
-end
+      table = Terminal::Table.new :style => {:width => 60} do |t|
+        t << [CastingOpportunity.find(opportunity[0]).character_name, CastingRequest.find(opportunity[1]).status]
+      end
 
-def search_by_attribute
+      table.align_column(0, :center)
+      table.align_column(1, :center)
+      puts table
+      end
 
-  prompt = TTY::Prompt.new
-  search_hash = {}
-
-  system "clear"
-  @gender = prompt.select("If you want to select by gender identity, please make your selection.", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
-
-  if @gender != "Don't_Search_by_Gender"
-    search_hash[:gender] = @gender
+    requests_menu
   end
 
-  system "clear"
-  choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
-  @age = prompt.multi_select("If you want to select by age_range, please make your selection.", choices)
+  def requests_menu
+    prompt = TTY::Prompt.new
 
-  if !@age.empty?
-    search_hash[:age_range] = @age
-  end
+    input = prompt.select("\nOPTIONS.\n", %w(Delete_Request Order_by_Status Order_by_Date Main_Menu))
 
-  system "clear"
-  @race = prompt.select("If you want to select by race, please make your selection.", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
-
-  if @race != "Don't_Search_by_Race"
-    search_hash[:race] = @race
-  end
-
-  system "clear"
-  @salary = prompt.select("If you want to select by salary, please make your selection.", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
-
-  if @salary != "Don't_Search_by_Salary"
-    search_hash[:salary] =  @salary
-  end
-
-  system "clear"
-  choices = %w(January February March April May June July August September October November December)
-  @dates = prompt.multi_select("If you want to select by dates, please make your selection.", choices)
-
-  if !@dates.empty?
-    search_hash[:dates] = @dates
-  end
-
-search_hash_with_strings = search_hash.each_with_object({}) { |(key,value), new_hash| new_hash[key] = value.to_s }
-
-  @@current_record =  CastingOpportunity.where(search_hash_with_strings)
-  @current = 0
-  if @@current_record.empty?
-    input = prompt.yes?("\nNone of the casting opportunities match your query. Would you like to run another search?")
-    if input == true
-      search_by_attribute
-    else
-      @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
-      @current = 0
-      # main_menu
+    case input
+      when "Delete_Request"
+        delete_request
+      when "Order_by_Status"
+        order_by_status
+      when "Order_by_Date"
+        order_by_date
     end
   end
-  list_opportunities
-end
 
+  def order_by_status
+    @@current_record = CastingRequest.where(actor_id: @@user.id).order (:status)
+    list_your_requests
+  end
+
+  def order_by_date
+    @@current_record = CastingRequest.where(actor_id: @@user.id).order (:id)
+    list_your_requests
+  end
+
+  def search_by_attribute
+    prompt = TTY::Prompt.new
+    search_hash = {}
+
+    system "clear"
+    @gender = prompt.select("If you want to select by gender identity, please make your selection.", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
+
+    if @gender != "Don't_Search_by_Gender"
+      search_hash[:gender] = @gender
+    end
+
+    system "clear"
+    choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
+    @age = prompt.multi_select("If you want to select by age_range, please make your selection.", choices)
+
+    if !@age.empty?
+      search_hash[:age_range] = @age
+    end
+
+    system "clear"
+    @race = prompt.select("If you want to select by race, please make your selection.", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
+
+    if @race != "Don't_Search_by_Race"
+      search_hash[:race] = @race
+    end
+
+    system "clear"
+    @salary = prompt.select("If you want to select by salary, please make your selection.", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
+
+    if @salary != "Don't_Search_by_Salary"
+      search_hash[:salary] =  @salary
+    end
+
+    system "clear"
+    choices = %w(January February March April May June July August September October November December)
+    @dates = prompt.multi_select("If you want to select by dates, please make your selection.", choices)
+
+    if !@dates.empty?
+      search_hash[:dates] = @dates
+    end
+
+  search_hash_with_strings = search_hash.each_with_object({}) { |(key,value), new_hash| new_hash[key] = value.to_s }
+
+    @@current_record =  CastingOpportunity.where(search_hash_with_strings)
+    @current = 0
+    if @@current_record.empty?
+      input = prompt.yes?("\nNone of the casting opportunities match your query. Would you like to run another search?")
+      if input == true
+        search_by_attribute
+      else
+        @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
+        @current = 0
+        # main_menu
+      end
+    end
+    list_opportunities
+  end
 end

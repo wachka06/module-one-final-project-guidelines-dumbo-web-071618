@@ -35,6 +35,7 @@ class Producer < ActiveRecord::Base
     when "Search_Opportunities_by_Attribute"
       @@user.search_by_attribute
     when "List_Requests"
+      @@current_record = CastingRequest.where(producer_id: @@user.id)
       @current = 0
       list_requests
     when "Search_Requests_by_Attribute"
@@ -104,6 +105,7 @@ class Producer < ActiveRecord::Base
       prompt.keypress("\nYou can only delete casting opportunities you create. Press any key to continue.")
       show_opportunity_record
       opportunity_record_menu
+      return
     end
 
     input = prompt.yes?("\nAre you sure you want to delete this casting opportunity?")
@@ -138,6 +140,7 @@ class Producer < ActiveRecord::Base
       prompt.keypress("\nYou can only edit the casting opportunities you create. Press any key to continue.")
       show_opportunity_record
       opportunity_record_menu
+      return
     end
 
     show_opportunity_record
@@ -188,6 +191,9 @@ class Producer < ActiveRecord::Base
       @@current_record[@current].update(dates: edit_input)
 
       edit_opportunity
+
+    when"Done_Editing"
+      return
    end
   end
 
@@ -201,9 +207,15 @@ class Producer < ActiveRecord::Base
   end
 
   def list_my_opportunities
-
+    prompt = TTY::Prompt.new
     @@current_record = CastingOpportunity.where(producer_id: @@user.id)
     @current = 0
+
+    if @@current_record.length < 1
+      prompt.keypress("\nYou have no casting opportunities. Press any key to continue.")
+      return
+    end
+
     show_opportunity_record
     opportunity_record_menu
   end
@@ -261,7 +273,6 @@ class Producer < ActiveRecord::Base
     end
   end
 
-  #SEARCH BY ATTRIBUTE
   def search_by_attribute
 
     prompt = TTY::Prompt.new
@@ -331,7 +342,10 @@ class Producer < ActiveRecord::Base
   def list_requests
     prompt = TTY::Prompt.new
 
-    @@current_record = CastingRequest.where(producer_id: @@user.id)
+    if @@current_record.length < 1
+      prompt.keypress("\nYou have no pending casting requests.")
+      return
+    end
 
     @actor = Actor.find(@@current_record[@current].actor_id)
 
@@ -339,7 +353,7 @@ class Producer < ActiveRecord::Base
 
     character_name = CastingOpportunity.find(@@current_record[@current].castingopportunity_id).character_name
 
-    request_status = CastingOpportunity.find(@@current_record[@current].castingopportunity_id).status
+    request_status = @@current_record[@current].status
 
     system "clear"
 
@@ -352,8 +366,6 @@ class Producer < ActiveRecord::Base
     puts " "
 
     show_actor_profile
-
-    # prompt.keypress("press any key to see your options.")
 
     requests_menu
   end
@@ -384,9 +396,9 @@ class Producer < ActiveRecord::Base
       list_requests
       end
     when "Accept_Request"
-      puts "ACCEPT REQUEST COMING SOON!!!"
+      accept_request
     when "Deny_Request"
-      puts "DENY REQUEST COMING SOON!!!"
+      deny_request
     end
   end
 
@@ -403,5 +415,15 @@ class Producer < ActiveRecord::Base
       t.add_row ["Availability", @actor.dates]
     end
     puts table
+  end
+
+  def accept_request
+    @@current_record[@current].update(status: "Accepted")
+    list_requests
+  end
+
+  def deny_request
+    @@current_record[@current].update(status: "Denied")
+    list_requests
   end
 end

@@ -5,8 +5,6 @@ natsuki = Producer.find(1)
 
 prompt = TTY::Prompt.new
 
-#WE STILL NEED WELCOME MESSAGE AND SIGN-IN LOG-IN OPTIONS
-#WELCOME MESSAGE
 system "clear"
 
 puts "\n\nHORIZON".green
