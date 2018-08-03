@@ -352,7 +352,7 @@ class Actor < ActiveRecord::Base
       else
         @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
-        # main_menu
+        return
       end
     end
     list_opportunities

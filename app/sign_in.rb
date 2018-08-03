@@ -25,19 +25,22 @@ end
 
 def log_in
   show_home_page
-  puts "\n\n\n\n\nCOMING SOON".yellow
-  puts"\n\nSTILL WORKING ON IT!".red
+  puts "\n\n\n\n\nWelcome back to HORIZON, #{@first_name} #{@last_name}!".yellow
   prompt = TTY::Prompt.new
-  prompt.keypress("But hey, let's test on. Press any key to proceed.")
+  prompt.keypress("\n\nPlease press any key to continue.")
   Producer.find_by(first_name: @first_name, last_name: @last_name)
 end
 
 def producer_sign_in
   get_name
   if Producer.find_by(first_name: @first_name, last_name: @last_name) != nil
-    puts "\nYou have an account already. Please log in with your username and password."
+    # puts "\nYou have an account already. Please log in with your username and password."
     log_in
   else
+    show_home_page
+    puts "\n\n\n\n\nWelcome to HORIZON, #{@first_name} #{@last_name}!".yellow
+    prompt = TTY::Prompt.new
+    prompt.keypress("\n\nPlease press any key to continue.")
     Producer.create(first_name: @first_name, last_name: @last_name)
   end
 end

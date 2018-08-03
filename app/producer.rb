@@ -98,6 +98,8 @@ class Producer < ActiveRecord::Base
     end
     puts table
 
+    @name = @gender = @age = @race = @salary = @dates = ""
+
     input = prompt.select("\nOPTIONS") do |menu|
       menu.choice "Edit Opportunity", 1
       menu.choice "Main Menu", 2
@@ -122,33 +124,41 @@ class Producer < ActiveRecord::Base
       return
     end
 
-    input = prompt.yes?("\nAre you sure you want to delete this casting opportunity?")
-    if input == true
+    puts "\nAre you sure you want to delete this casting opportunity? (y/n)"
+    input = gets.chomp
 
+    if input == "y" || input == "Y" || input == "yes"
       @@current_record[@current].destroy
 
       CastingRequest.where(castingopportunity_id: @@current_record[@current].id).destroy_all
 
       @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
+
       prompt.keypress("\nThis casting opportunity has been deleted. Press any key to continue.")
 
-      system "clear"
-        if @current == 0
-          @current +=1
-          @@current_record = CastingOpportunity.where(producer_id: self.id)
-          show_opportunity_record
-          opportunity_record_menu
-        else
-          @current -=1
-          @@current_record = CastingOpportunity.where(producer_id: self.id)
-          show_opportunity_record
-          opportunity_record_menu
-        end
     else
       prompt.keypress("\nCasting opportunity was not deleted. Press any key to continue.")
         show_opportunity_record
         opportunity_record_menu
+        return
     end
+
+      if @my_opportunity == 1
+        @@current_record = CastingOpportunity.where(producer_id: self.id)
+      else @my_opportunity == 0
+        @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
+      end
+
+      if @current == 0
+        @current += 1
+        show_opportunity_record
+        opportunity_record_menu
+      else
+        @current -= 1
+          show_opportunity_record
+          opportunity_record_menu
+      end
+
   end
 
   def edit_opportunity
@@ -393,7 +403,15 @@ class Producer < ActiveRecord::Base
 
     system "clear"
 
-    puts "#{self.full_name} Pending Casting Requests\n".green
+    system "clear"
+    prompt = TTY::Prompt.new
+
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("casting requests"))
+    puts ""
+    puts ""
 
     table = Terminal::Table.new :headings => [["Actor Name".yellow, "Character Name".yellow, "Status".yellow]], :rows => [[actor_name, character_name, request_status.red]], :style => {:width => 60}
 
@@ -546,7 +564,7 @@ class Producer < ActiveRecord::Base
     puts pastel.yellow(font.write("actor profiles"))
     puts ""
     puts ""
-    
+
     @actor = Actor.all[@current]
     show_actor_profile
     actor_profile_menu
