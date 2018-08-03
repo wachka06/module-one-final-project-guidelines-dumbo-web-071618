@@ -80,6 +80,13 @@ class Actor < ActiveRecord::Base
 
   def edit_profile
     system "clear"
+    prompt = TTY::Prompt.new
+
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("edit profile"))
+
     view_profile
 
     prompt = TTY::Prompt.new
