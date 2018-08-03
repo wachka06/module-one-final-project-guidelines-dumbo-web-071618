@@ -41,7 +41,8 @@ class Actor < ActiveRecord::Base
     when "Edit_Profile"
       edit_profile
     when "Exit"
-      puts "Thank you for your visit!"
+      show_home_page
+      puts "\n\n\n\n\nThank YOU for your visit!\n\n\n\n\n"
       exit
     end
   end
@@ -144,6 +145,7 @@ class Actor < ActiveRecord::Base
       t.add_separator
       t.add_row ["Dates", @@current_record[@current].dates]
     end
+    puts "\n\nSHOWING ALL CASTING OPPORTUNITIES\n".yellow
     puts table
   end
 
@@ -185,7 +187,7 @@ class Actor < ActiveRecord::Base
     @current = 0
 
     if @@current_record.empty?
-     prompt.keypress("None of the casting opportunities currently match your criteria. Press any key to return to menu.")
+     prompt.keypress("\nNone of the casting opportunities currently match your criteria. Press any key to return to menu.")
      @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
      @current = 0
      return

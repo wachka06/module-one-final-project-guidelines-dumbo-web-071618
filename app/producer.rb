@@ -11,7 +11,7 @@ class Producer < ActiveRecord::Base
     system "clear"
     prompt = TTY::Prompt.new
 
-    puts "#{self.full_name} - Main Menu".yellow
+    puts "\n\n#{self.full_name.upcase} - MAIN MENU".yellow
 
     current_roles_producer
 
@@ -31,8 +31,10 @@ class Producer < ActiveRecord::Base
     when "List_All_Opportunities"
         @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
+        @my_opportunity = 0
       self.list_opportunities
     when "List_My_Opportunities"
+      @my_opportunity = 1
       list_my_opportunities
     when "Search_Opportunities_by_Attribute"
       self.search_by_attribute
@@ -44,7 +46,8 @@ class Producer < ActiveRecord::Base
       @current = 0
       view_actor_profiles
     when "Exit"
-      puts "\nThank YOU for your visit!"
+      show_home_page
+      puts "\n\n\n\n\nThank YOU for your visit!\n\n\n\n\n"
       exit
     end
   end
@@ -241,6 +244,11 @@ class Producer < ActiveRecord::Base
       t.add_row ["Salary", @@current_record[@current].salary]
       t.add_separator
       t.add_row ["Dates", @@current_record[@current].dates]
+    end
+    if @my_opportunity == 0
+      puts "\n\nSHOWING ALL CASTING OPPORTUNITIES\n".yellow
+    else
+      puts "\n\nSHOWING #{self.full_name.upcase}'S CASTING OPPORTUNITIES\n".yellow
     end
     puts table
 
@@ -562,7 +570,7 @@ system "clear"
          end
 
        puts " "
-       puts Terminal::Table.new :rows => rows, :style => {:width => 20}, :border_x => "="
+       puts Terminal::Table.new :rows => rows, :style => {:width => 30}, :border_x => "="
      end
    end
 end

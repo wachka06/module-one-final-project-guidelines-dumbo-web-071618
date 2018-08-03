@@ -1,16 +1,12 @@
 require_relative '../config/environment'
 
+system "clear"
+
+show_home_page
+
 prompt = TTY::Prompt.new
 
-system "clear"
-
-puts "\n\nHORIZON".green
-puts "\n\n\n\nWhere the Stars Meet the Sky".yellow
-
-prompt.keypress("\n\n\n\n\nPlease press any key to begin.")
-
-system "clear"
-@role = prompt.select("Please select your role.", %w(Producer Actor))
+@role = prompt.select("\n\n\n\n\nPlease select your role.", %w(Producer Actor))
 if @role == "Producer"
   current_user = producer_sign_in
 elsif @role == "Actor"
@@ -25,5 +21,6 @@ until (@menu_input == "Exit")
 
 end
 
+show_home_page
 
-puts "HELLO WORLD"
+puts "\n\n\n\n\nThank you for your visit!"
