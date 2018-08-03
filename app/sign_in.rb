@@ -2,16 +2,16 @@ def show_home_page
   system "clear"
   font = TTY::Font.new(:doom)
   pastel = Pastel.new
-  puts pastel.yellow(font.write("HORIZON"))
+  puts pastel.bright_magenta(font.write("HORIZON"))
   puts " "
   font = TTY::Font.new(:straight)
-  puts pastel.green(font.write("where the stars meet the sky"))
+  puts pastel.bright_cyan(font.write("where the stars meet the sky"))
 end
 
 def get_name
   show_home_page
   prompt = TTY::Prompt.new
-  puts "\n\n\n\n\nPlease enter your full name.\n"
+  puts "\n\n\n\n\nPlease enter your full name.\n\n"
   name = gets.chomp
     if name.nil? || name == ""
       prompt.kepypress("\nPlease enter your name.")

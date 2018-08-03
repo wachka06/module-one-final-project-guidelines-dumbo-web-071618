@@ -10,7 +10,11 @@ class Actor < ActiveRecord::Base
     system "clear"
     prompt = TTY::Prompt.new
 
-    puts "MAIN MENU".yellow
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("main menu"))
+
 
     puts ""
     puts ""
@@ -199,7 +203,7 @@ class Actor < ActiveRecord::Base
     prompt = TTY::Prompt.new
     if !CastingRequest.find_by(actor_id: self.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id).nil?
       puts "\nYou've already requested an audition for this role."
-      prompt.keypress("\nBE PATIENT.".red)
+      prompt.keypress("\nBE PATIENT.\n".red)
 
       show_opportunity_record
       opportunity_record_menu
@@ -277,37 +281,42 @@ class Actor < ActiveRecord::Base
     search_hash = {}
 
     system "clear"
-    @gender = prompt.select("If you want to select by gender identity, please make your selection.", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
+    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    @gender = prompt.select("Gender Identity", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
 
     if @gender != "Don't_Search_by_Gender"
       search_hash[:gender] = @gender
     end
 
     system "clear"
+    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
     choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
-    @age = prompt.multi_select("If you want to select by age_range, please make your selection.", choices)
+    @age = prompt.multi_select("Age Range", choices)
 
     if !@age.empty?
       search_hash[:age_range] = @age
     end
 
     system "clear"
-    @race = prompt.select("If you want to select by race, please make your selection.", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
+    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    @race = prompt.select("Race", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
 
     if @race != "Don't_Search_by_Race"
       search_hash[:race] = @race
     end
 
     system "clear"
-    @salary = prompt.select("If you want to select by salary, please make your selection.", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
+    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    @salary = prompt.select("Salary Range", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
 
     if @salary != "Don't_Search_by_Salary"
       search_hash[:salary] =  @salary
     end
 
     system "clear"
+    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
     choices = %w(January February March April May June July August September October November December)
-    @dates = prompt.multi_select("If you want to select by dates, please make your selection.", choices)
+    @dates = prompt.multi_select("Dates", choices)
 
     if !@dates.empty?
       search_hash[:dates] = @dates
