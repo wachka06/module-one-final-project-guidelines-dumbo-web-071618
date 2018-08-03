@@ -246,7 +246,7 @@ class Actor < ActiveRecord::Base
     font = TTY::Font.new(:doom)
     pastel = Pastel.new
 
-    puts pastel.yellow(font.write("casting requests"))
+    puts pastel.yellow(font.write("requests"))
     puts ""
     puts ""
 

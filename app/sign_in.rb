@@ -5,7 +5,7 @@ def show_home_page
   puts pastel.bright_magenta(font.write("HORIZON"))
   puts " "
   font = TTY::Font.new(:straight)
-  puts pastel.bright_cyan(font.write("where the stars meet the sky"))
+  puts pastel.bright_cyan(font.write("where the stars meet the sea"))
 end
 
 def get_name
