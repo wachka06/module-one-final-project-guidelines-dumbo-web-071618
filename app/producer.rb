@@ -11,8 +11,15 @@ class Producer < ActiveRecord::Base
     system "clear"
     prompt = TTY::Prompt.new
 
-    puts "\n\n#{self.full_name.upcase} - MAIN MENU".yellow
+    prompt = TTY::Prompt.new
 
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("main menu"))
+    puts ""
+    puts ""
+    puts "Welcome #{self.full_name}!"
     current_roles_producer
 
     if pending_requests?
@@ -246,9 +253,25 @@ class Producer < ActiveRecord::Base
       t.add_row ["Dates", @@current_record[@current].dates]
     end
     if @my_opportunity == 0
-      puts "\n\nSHOWING ALL CASTING OPPORTUNITIES\n".yellow
+      prompt = TTY::Prompt.new
+
+      font = TTY::Font.new(:doom)
+      pastel = Pastel.new
+
+      puts pastel.yellow(font.write("all roles"))
+      puts ""
+      puts ""
+
     else
-      puts "\n\nSHOWING #{self.full_name.upcase}'S CASTING OPPORTUNITIES\n".yellow
+      prompt = TTY::Prompt.new
+
+      font = TTY::Font.new(:doom)
+      pastel = Pastel.new
+
+      puts pastel.yellow(font.write("your queries"))
+      puts ""
+      puts ""
+
     end
     puts table
 
@@ -294,14 +317,14 @@ class Producer < ActiveRecord::Base
     prompt = TTY::Prompt.new
     search_hash = {}
 
-    system "clear"
+    search_header
     @gender = prompt.select("If you want to select by gender identity, please make your selection.", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
 
     if @gender != "Don't_Search_by_Gender"
       search_hash[:gender] = @gender
     end
 
-    system "clear"
+    search_header
     choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
     @age = prompt.multi_select("If you want to select by age_range, please make your selection.", choices)
 
@@ -309,21 +332,21 @@ class Producer < ActiveRecord::Base
       search_hash[:age_range] = @age
     end
 
-    system "clear"
+    search_header
     @race = prompt.select("If you want to select by race, please make your selection.", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
 
     if @race != "Don't_Search_by_Race"
       search_hash[:race] = @race
     end
 
-    system "clear"
+    search_header
     @salary = prompt.select("If you want to select by salary, please make your selection.", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
 
     if @salary != "Don't_Search_by_Salary"
       search_hash[:salary] =  @salary
     end
 
-    system "clear"
+    search_header
     choices = %w(January February March April May June July August September October November December)
     @dates = prompt.multi_select("If you want to select by dates, please make your selection.", choices)
 
@@ -451,7 +474,17 @@ class Producer < ActiveRecord::Base
       [request.castingopportunity_id, request.id]
     end
 
-system "clear"
+    system "clear"
+    prompt = TTY::Prompt.new
+
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("actor's record"))
+    puts ""
+    puts ""
+
+
 
     puts "\n#{Actor.find(@x).first_name} has requested auditions for the following roles:\n"
 
@@ -505,6 +538,15 @@ system "clear"
 
   def view_actor_profiles
     system "clear"
+    prompt = TTY::Prompt.new
+
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("actor profiles"))
+    puts ""
+    puts ""
+    
     @actor = Actor.all[@current]
     show_actor_profile
     actor_profile_menu
@@ -573,4 +615,17 @@ system "clear"
        puts Terminal::Table.new :rows => rows, :style => {:width => 30}, :border_x => "="
      end
    end
+
+   def search_header
+     system "clear"
+     prompt = TTY::Prompt.new
+
+     font = TTY::Font.new(:doom)
+     pastel = Pastel.new
+
+     puts pastel.yellow(font.write("search"))
+     puts ""
+     puts ""
+   end
+
 end

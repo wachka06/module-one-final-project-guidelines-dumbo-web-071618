@@ -14,8 +14,6 @@ class Actor < ActiveRecord::Base
     pastel = Pastel.new
 
     puts pastel.yellow(font.write("main menu"))
-
-
     puts ""
     puts ""
 
@@ -86,6 +84,8 @@ class Actor < ActiveRecord::Base
     pastel = Pastel.new
 
     puts pastel.yellow(font.write("edit profile"))
+    puts ""
+    puts ""
 
     view_profile
 
@@ -156,7 +156,15 @@ class Actor < ActiveRecord::Base
       t.add_separator
       t.add_row ["Dates", @@current_record[@current].dates]
     end
-    puts "\n\nSHOWING ALL CASTING OPPORTUNITIES\n".yellow
+    prompt = TTY::Prompt.new
+
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("all roles"))
+    puts ""
+    puts ""
+
     puts table
   end
 
@@ -232,11 +240,15 @@ class Actor < ActiveRecord::Base
       [request.castingopportunity_id, request.id]
     end
 
-    puts "\nYou've requested to audition for the following roles:"
-
     system "clear"
+    prompt = TTY::Prompt.new
 
-    puts "#{self.full_name} Casting Requests\n".green
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("casting requests"))
+    puts ""
+    puts ""
 
     table = Terminal::Table.new :rows => [["Character Name".yellow, "Status".yellow]], :style => {:width => 60}
 
@@ -287,16 +299,16 @@ class Actor < ActiveRecord::Base
     prompt = TTY::Prompt.new
     search_hash = {}
 
-    system "clear"
-    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+  search_header
+
     @gender = prompt.select("Gender Identity", %w(Don't_Search_by_Gender Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
 
     if @gender != "Don't_Search_by_Gender"
       search_hash[:gender] = @gender
     end
 
-    system "clear"
-    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    search_header
+
     choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
     @age = prompt.multi_select("Age Range", choices)
 
@@ -304,24 +316,24 @@ class Actor < ActiveRecord::Base
       search_hash[:age_range] = @age
     end
 
-    system "clear"
-    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    search_header
+
     @race = prompt.select("Race", %w(Don't_Search_by_Race Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
 
     if @race != "Don't_Search_by_Race"
       search_hash[:race] = @race
     end
 
-    system "clear"
-    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    search_header
+
     @salary = prompt.select("Salary Range", %w(Don't_Search_by_Salary Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
 
     if @salary != "Don't_Search_by_Salary"
       search_hash[:salary] =  @salary
     end
 
-    system "clear"
-    puts "\n\nSEARCHING CASTING OPPORTUNITIES BY ATTRIBUTES\n".yellow
+    search_header
+
     choices = %w(January February March April May June July August September October November December)
     @dates = prompt.multi_select("Dates", choices)
 
@@ -349,6 +361,19 @@ class Actor < ActiveRecord::Base
   def pending_requests?
     CastingRequest.where(actor_id: self.id, status: "Accepted").length > 0
   end
+
+  def search_header
+    system "clear"
+    prompt = TTY::Prompt.new
+
+    font = TTY::Font.new(:doom)
+    pastel = Pastel.new
+
+    puts pastel.yellow(font.write("search"))
+    puts ""
+    puts ""
+  end
+
 #COULD NOT GET IT TO WORK_REVISIT
   # def delete_request
   #   prompt = TTY::Prompt.new
