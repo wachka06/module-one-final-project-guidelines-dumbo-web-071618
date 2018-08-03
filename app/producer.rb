@@ -149,7 +149,11 @@ class Producer < ActiveRecord::Base
         @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
       end
 
-      if @current == 0
+      if @@current_record.length < 1
+        prompt.keypress("Currently there are no active casting opportunities.")
+        return
+      elsif
+        @current == 0
         @current += 1
         show_opportunity_record
         opportunity_record_menu
