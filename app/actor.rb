@@ -18,7 +18,7 @@ class Actor < ActiveRecord::Base
     view_profile
 
     if pending_requests?
-      puts "\n\nYou have #{CastingRequest.where(actor_id: @@user.id, status: "Accepted").length} upcoming auditions!".red
+      puts "\n\nYou have #{CastingRequest.where(actor_id: self.id, status: "Accepted").length} upcoming auditions!".red
     end
 
     @menu_input = prompt.select("\nPlease select from the following options.\n", %w(List_All_Opportunities List_Matching_Opportunities Search_Opportunities_by_Attributes List_Your_Requests Edit_Profile Exit))
@@ -35,7 +35,7 @@ class Actor < ActiveRecord::Base
     when "Search_Opportunities_by_Attributes"
       search_by_attribute
     when "List_Your_Requests"
-      @@current_record = CastingRequest.where(actor_id: @@user.id)
+      @@current_record = CastingRequest.where(actor_id: self.id)
       @current = 0
       list_your_requests
     when "Edit_Profile"
@@ -47,16 +47,16 @@ class Actor < ActiveRecord::Base
   end
 
   def view_profile
-    table = Terminal::Table.new :title => "#{@@user.full_name} Profile" do |t|
-      t << ["Gender Identity", @@user.gender]
+    table = Terminal::Table.new :title => "#{self.full_name} Profile" do |t|
+      t << ["Gender Identity", self.gender]
       t << :separator
-      t.add_row ["Age Range", @@user.age_range]
+      t.add_row ["Age Range", self.age_range]
       t.add_separator
-      t.add_row ["Race", @@user.race]
+      t.add_row ["Race", self.race]
       t.add_separator
-      t.add_row ["Salary", @@user.salary_range]
+      t.add_row ["Salary", self.salary_range]
       t.add_separator
-      t.add_row ["Availability", @@user.dates]
+      t.add_row ["Availability", self.dates]
     end
     puts table
   end
@@ -85,28 +85,28 @@ class Actor < ActiveRecord::Base
       choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
       edit_input = prompt.multi_select("Please select the new age ranges that apply.", choices)
 
-      @@user.update(age_range: edit_input)
+      self.update(age_range: edit_input)
 
       edit_profile
 
     when "Gender_Identity"
       edit_input = prompt.select("Please select gender identity.", %w(Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
 
-      @@user.update(gender: edit_input)
+      self.update(gender: edit_input)
 
       edit_profile
 
     when "Race"
       edit_input = prompt.select("Please select race.", %w(Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
 
-      @@user.update(race: edit_input)
+      self.update(race: edit_input)
 
       edit_profile
 
     when "Salary"
       edit_input = prompt.select("Please select salary.", %w(Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
 
-      @@user.update(salary_range: edit_input)
+      self.update(salary_range: edit_input)
 
       edit_profile
 
@@ -114,7 +114,7 @@ class Actor < ActiveRecord::Base
       choices = %w(January February March April May June July August September October November December)
       edit_input = prompt.multi_select("Dates: please select all that apply.", choices)
 
-      @@user.update(dates: edit_input)
+      self.update(dates: edit_input)
 
       edit_profile
 
@@ -181,7 +181,7 @@ class Actor < ActiveRecord::Base
   def search_matching_opportunities
     prompt = TTY::Prompt.new
 
-    @@current_record = CastingOpportunity.where(gender: @@user.gender, age_range: @@user.age_range, race: @@user.race, salary: @@user.salary_range, dates: @@user.dates)
+    @@current_record = CastingOpportunity.where(gender: self.gender, age_range: self.age_range, race: self.race, salary: self.salary_range, dates: self.dates)
     @current = 0
 
     if @@current_record.empty?
@@ -195,14 +195,14 @@ class Actor < ActiveRecord::Base
 
   def create_request
     prompt = TTY::Prompt.new
-    if !CastingRequest.find_by(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id).nil?
+    if !CastingRequest.find_by(actor_id: self.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id).nil?
       puts "\nYou've already requested an audition for this role."
       prompt.keypress("\nBE PATIENT.".red)
 
       show_opportunity_record
       opportunity_record_menu
     else
-      CastingRequest.create(actor_id: @@user.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id, status: "Pending")
+      CastingRequest.create(actor_id: self.id, castingopportunity_id: @@current_record[@current].id, producer_id: @@current_record[@current].producer_id, status: "Pending")
 
       puts "\nYour request to audition for the part of #{@@current_record[@current].character_name} has been sent to the producer."
 
@@ -223,7 +223,7 @@ class Actor < ActiveRecord::Base
 
     system "clear"
 
-    puts "#{@@user.full_name} Casting Requests\n".green
+    puts "#{self.full_name} Casting Requests\n".green
 
     table = Terminal::Table.new :rows => [["Character Name".yellow, "Status".yellow]], :style => {:width => 60}
 
@@ -261,12 +261,12 @@ class Actor < ActiveRecord::Base
   end
 
   def order_by_status
-    @@current_record = CastingRequest.where(actor_id: @@user.id).order (:status)
+    @@current_record = CastingRequest.where(actor_id: self.id).order (:status)
     list_your_requests
   end
 
   def order_by_date
-    @@current_record = CastingRequest.where(actor_id: @@user.id).order (:id)
+    @@current_record = CastingRequest.where(actor_id: self.id).order (:id)
     list_your_requests
   end
 
@@ -329,7 +329,7 @@ class Actor < ActiveRecord::Base
   end
 
   def pending_requests?
-    CastingRequest.where(actor_id: @@user.id, status: "Accepted").length > 0
+    CastingRequest.where(actor_id: self.id, status: "Accepted").length > 0
   end
 #COULD NOT GET IT TO WORK_REVISIT
   # def delete_request

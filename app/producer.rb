@@ -11,12 +11,14 @@ class Producer < ActiveRecord::Base
     system "clear"
     prompt = TTY::Prompt.new
 
-    puts "MAIN MENU".yellow
+    puts "#{self.full_name} - Main Menu".yellow
+
+    current_roles_producer
 
     if pending_requests?
-      puts "\nYou have #{CastingRequest.where(producer_id: @@user.id, status: "Pending").length} pending casting requests.".red
+      puts "\n\nYou have #{CastingRequest.where(producer_id: self.id, status: "Pending").length} casting requests pending.\n".red
     else
-      puts "\nYou have no pending casting requests."
+      puts "\nYou have no pending casting requests.\n"
     end
 
   @menu_input = prompt.select("\nPlease select from the following options.\n", %w(Create_Opportunity List_All_Opportunities List_My_Opportunities Search_Opportunities_by_Attribute List_Requests View_Actor_Profiles Exit))
@@ -25,17 +27,17 @@ class Producer < ActiveRecord::Base
   def menu_navigate
     case @menu_input
     when "Create_Opportunity"
-      @@user.create_opportunity
+      self.create_opportunity
     when "List_All_Opportunities"
         @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
         @current = 0
-      @@user.list_opportunities
+      self.list_opportunities
     when "List_My_Opportunities"
       list_my_opportunities
     when "Search_Opportunities_by_Attribute"
-      @@user.search_by_attribute
+      self.search_by_attribute
     when "List_Requests"
-      @@current_record = CastingRequest.where(producer_id: @@user.id)
+      @@current_record = CastingRequest.where(producer_id: self.id)
       @current = 0
       list_requests
     when "View_Actor_Profiles"
@@ -50,28 +52,29 @@ class Producer < ActiveRecord::Base
   def create_opportunity
     prompt = TTY::Prompt.new
 
-    system "clear"
+    in_progress_table
     @name = prompt.ask("Please enter character name.", required: true)
 
-    system "clear"
+    in_progress_table
     @gender = prompt.select("Please select gender identity.", %w(Male Female TransMale TransFemale Genderqueer Something_Else Prefer_Not_to_Answer))
 
-    system "clear"
+    in_progress_table
     choices = %w(16-21 21-30 30-35 35-45 45-50 50-60 60+)
     @age = prompt.multi_select("Age Range: please select all that apply.", choices)
 
-    system "clear"
+    in_progress_table
     @race = prompt.select("Please select race.", %w(Asian Black/African Caucasian Hispanic/Latinx Native_American Pacific_Islander Prefer_Not_to_Answer))
 
-    system "clear"
+    in_progress_table
     @salary = prompt.select("Please select salary.", %w(Unpaid Less_than_5k 5k-50k 50k-150k 150k-500k More_than_500k))
 
-    system "clear"
+    in_progress_table
     choices = %w(January February March April May June July August September October November December)
     @dates = prompt.multi_select("Dates: please select all that apply.", choices)
 
-    CastingOpportunity.create(gender: @gender, age_range: @age, race: @race, salary: @salary, dates: @dates, status: "Pending", producer_id: @@user.id, character_name: @name)
+    CastingOpportunity.create(gender: @gender, age_range: @age, race: @race, salary: @salary, dates: @dates, status: "Pending", producer_id: self.id, character_name: @name)
 
+    system "clear"
     table = Terminal::Table.new :title => @name do |t|
       t << ["Gender Identity", @gender]
       t << :separator
@@ -102,7 +105,7 @@ class Producer < ActiveRecord::Base
   def delete_opportunity
     prompt = TTY::Prompt.new
 
-    if @@current_record[@current].producer_id != @@user.id
+    if @@current_record[@current].producer_id != self.id
       prompt.keypress("\nYou can only delete casting opportunities you create. Press any key to continue.")
       show_opportunity_record
       opportunity_record_menu
@@ -112,7 +115,9 @@ class Producer < ActiveRecord::Base
     input = prompt.yes?("\nAre you sure you want to delete this casting opportunity?")
     if input == true
 
-      @@current_record[@current].delete
+      @@current_record[@current].destroy
+
+      CastingRequest.where(castingopportunity_id: @@current_record[@current].id).destroy_all
 
       @@current_record = CastingOpportunity.where.not(status: "Closed").order(:id)
       prompt.keypress("\nThis casting opportunity has been deleted. Press any key to continue.")
@@ -120,10 +125,12 @@ class Producer < ActiveRecord::Base
       system "clear"
         if @current == 0
           @current +=1
+          @@current_record = CastingOpportunity.where(producer_id: self.id)
           show_opportunity_record
           opportunity_record_menu
         else
           @current -=1
+          @@current_record = CastingOpportunity.where(producer_id: self.id)
           show_opportunity_record
           opportunity_record_menu
         end
@@ -137,7 +144,7 @@ class Producer < ActiveRecord::Base
   def edit_opportunity
     prompt = TTY::Prompt.new
 
-    if @@current_record[@current].producer_id != @@user.id
+    if @@current_record[@current].producer_id != self.id
       prompt.keypress("\nYou can only edit the casting opportunities you create. Press any key to continue.")
       show_opportunity_record
       opportunity_record_menu
@@ -209,7 +216,7 @@ class Producer < ActiveRecord::Base
 
   def list_my_opportunities
     prompt = TTY::Prompt.new
-    @@current_record = CastingOpportunity.where(producer_id: @@user.id)
+    @@current_record = CastingOpportunity.where(producer_id: self.id)
     @current = 0
 
     if @@current_record.length < 1
@@ -237,7 +244,7 @@ class Producer < ActiveRecord::Base
     end
     puts table
 
-    if @@current_record[@current].producer_id == @@user.id
+    if @@current_record[@current].producer_id == self.id
       puts "\nYou created this casting opportunity. You can edit it or delete it.".yellow
     end
   end
@@ -267,16 +274,15 @@ class Producer < ActiveRecord::Base
       list_opportunities
       end
     when "Delete_Opportunity"
-      @@user.delete_opportunity
+      self.delete_opportunity
     when "Edit_Opportunity"
-      @@user.edit_opportunity
+      self.edit_opportunity
     when "Main_Menu"
       # main_menu
     end
   end
 
   def search_by_attribute
-
     prompt = TTY::Prompt.new
     search_hash = {}
 
@@ -335,7 +341,7 @@ class Producer < ActiveRecord::Base
   end
 
   def pending_requests?
-    CastingRequest.where(producer_id: @@user.id, status: "Pending").length > 0
+    CastingRequest.where(producer_id: self.id, status: "Pending").length > 0
   end
 
   def list_requests
@@ -356,7 +362,7 @@ class Producer < ActiveRecord::Base
 
     system "clear"
 
-    puts "#{@@user.full_name} Pending Casting Requests\n".green
+    puts "#{self.full_name} Pending Casting Requests\n".green
 
     table = Terminal::Table.new :headings => [["Actor Name".yellow, "Character Name".yellow, "Status".yellow]], :rows => [[actor_name, character_name, request_status.red]], :style => {:width => 60}
 
@@ -439,7 +445,7 @@ class Producer < ActiveRecord::Base
 
 system "clear"
 
-    puts "\n#{Actor.find(@x).first_name} has requested auditions for the following roles:"
+    puts "\n#{Actor.find(@x).first_name} has requested auditions for the following roles:\n"
 
     table = Terminal::Table.new :rows => [["Character Name".yellow, "Status".yellow]], :style => {:width => 60}
 
@@ -473,7 +479,7 @@ system "clear"
       when "Order_by_Date"
         order_by_date
       when "Back_to_Casting_Requests"
-        @@current_record = CastingRequest.where(producer_id: @@user.id)
+        @@current_record = CastingRequest.where(producer_id: self.id)
         @current = 0
         list_requests
     end
@@ -523,4 +529,40 @@ system "clear"
       end
     end
   end
+
+  def in_progress_table
+    system "clear"
+    table = Terminal::Table.new :title => @name do |t|
+      t << ["Gender Identity", @gender]
+      t << :separator
+      t.add_row ["Age Range", @age]
+      t.add_separator
+      t.add_row ["Race", @race]
+      t.add_separator
+      t.add_row ["Salary", @salary]
+      t.add_separator
+      t.add_row ["Dates", @dates]
+    end
+    puts table
+    puts " "
+    puts " "
+  end
+
+  def current_roles_producer
+    rows = []
+    row_number = 0
+     my_opportunities = CastingOpportunity.where(producer_id: self.id)
+
+     if my_opportunities.length < 1
+       "Currently, you're not casting any roles."
+     else
+       puts "\nYou're currently casting the following roles:\n"
+       my_opportunities.each do |opportunity|
+         rows << [opportunity.character_name, ""]
+         end
+
+       puts " "
+       puts Terminal::Table.new :rows => rows, :style => {:width => 20}, :border_x => "="
+     end
+   end
 end
