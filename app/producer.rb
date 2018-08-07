@@ -370,6 +370,9 @@ class Producer < ActiveRecord::Base
 
   search_hash_with_strings = search_hash.each_with_object({}) { |(key,value), new_hash| new_hash[key] = value.to_s }
 
+
+
+
     @@current_record =  CastingOpportunity.where(search_hash_with_strings)
     @current = 0
     if @@current_record.empty?
