@@ -21,6 +21,7 @@ As a producer, the user only needs their full name to create an account. Once lo
 
 If an actor sends a casting request, the producer will be notified immediately on their homepage. When the producer is searching through casting opportunities, those that they created will be highlighted. If an actor sends a casting request to one of the casting opportunities that the producer created, the producer can see the actor's casting track record: all of the parts the actor has requested auditions for and whether they were denied, accepted or are still pending.
 
+## COMING SOON
 In the next version, producers will be able to send casting requests directly to actors who have not reached out. We will provide more flexibility. For instance, the search engine will be able to provide incomplete matches (any casting opportunity that includes but is not limited to a specific age-range, for example).
 
 Hope you enjoy!
