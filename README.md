@@ -1,19 +1,22 @@
-#HORIZON
+# HORIZON
 
-#Where the Stars Meet the Sea
+# Where the Stars Meet the Sea
 
 
-##OVERVIEW
+## OVERVIEW
 "Horizon" is the first iteration of a relational database meant for producers of independent films and television shows and actors to find each other for specific roles in the producers' current productions.
 
-##ACTOR
+## SPECS
+Please run 'bundle install' before running 'ruby bin/run.rb'
+
+## ACTOR
 As an actor, you will create a Profile detailing certain attributes that will be used to help search and find matches for open casting opportunities. The app allows the actor to change these attributes at any time (except for the actor's name), allowing for more flexibility to find opportunities.
 
 Actors are able to look at all casting opportunities, search casting opportunities by one or multiple attributes or find perfect matches to their profile. They can request an audition for a specific role at any moment, check the status of those requests and order them by date or status.
 
 If a producer accepts one of these requests, the actor will be immediately notified on their home page so they know they have an upcoming audition.
 
-##PRODUCER
+## PRODUCER
 As a producer, the user only needs their full name to create an account. Once logged into the database, the producer can create casting opportunities, search casting opportunities by one or multiple attributes, search actor profiles, accept or deny casting requests and even see an actor's casting track record.Once a casting opportunity is created, the producer can edit it or delete it at anytime.
 
 If an actor sends a casting request, the producer will be notified immediately on their homepage. When the producer is searching through casting opportunities, those that they created will be highlighted. If an actor sends a casting request to one of the casting opportunities that the producer created, the producer can see the actor's casting track record: all of the parts the actor has requested auditions for and whether they were denied, accepted or are still pending.
